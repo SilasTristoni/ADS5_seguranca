@@ -436,19 +436,21 @@ summary {
   padding: clamp(8px, 1.5vw, 18px);
   z-index: 50;
   background: rgba(0,0,0,.9);
-  backdrop-filter: blur(10px);
 }
 .modal.show { display: flex; }
 .modal-card {
   position: relative;
-  width: min(1600px, 99vw);
-  height: min(920px, 96vh);
+  width: min(1280px, 99vw, calc(94vh * 1.338));
+  height: auto;
+  aspect-ratio: 360 / 269;
   padding: 0;
   background: #000;
   display: flex;
   flex-direction: column;
   overflow: hidden;
   border-radius: 18px;
+  backdrop-filter: none;
+  box-shadow: 0 18px 44px rgba(0,0,0,.45);
 }
 .modal-card h2 {
   position: absolute;
@@ -484,7 +486,8 @@ video {
   min-height: 0;
   border-radius: inherit;
   background: #000;
-  object-fit: cover;
+  object-fit: contain;
+  transform: translateZ(0);
 }
 
 @keyframes float {

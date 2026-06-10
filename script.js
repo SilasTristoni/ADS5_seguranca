@@ -271,7 +271,8 @@ window.addEventListener('resize', () => {
 $('#yesBtn').addEventListener('click', async () => {
   $('#noBtn').style.display = 'none';
   $('#videoModal').classList.add('show');
-  burstConfetti(170);
+  stopMatrix();
+  clearConfetti();
   const video = $('#inviteVideo');
   video.volume = 0.7;
   try {
@@ -300,6 +301,7 @@ document.addEventListener('keydown', (event) => {
 function closeModal() {
   $('#videoModal').classList.remove('show');
   $('#inviteVideo').pause();
+  startMatrix();
   if (!$('#convite').classList.contains('locked')) {
     $('#noBtn').style.display = 'inline-flex';
     moveNoButton(false);
@@ -310,6 +312,7 @@ function closeModal() {
 const matrixCanvas = $('#matrix');
 const matrixCtx = matrixCanvas.getContext('2d');
 let drops = [];
+let matrixInterval = null;
 function resizeMatrix() {
   matrixCanvas.width = window.innerWidth;
   matrixCanvas.height = window.innerHeight;
@@ -327,8 +330,19 @@ function drawMatrix() {
     drops[i]++;
   }
 }
+function startMatrix() {
+  if (!matrixInterval) {
+    matrixInterval = setInterval(drawMatrix, 80);
+  }
+}
+function stopMatrix() {
+  if (matrixInterval) {
+    clearInterval(matrixInterval);
+    matrixInterval = null;
+  }
+}
 resizeMatrix();
-setInterval(drawMatrix, 55);
+startMatrix();
 window.addEventListener('resize', resizeMatrix);
 window.addEventListener('resize', () => {
   if ($('#noBtn').dataset.floating === 'true') moveNoButton(false);
@@ -338,6 +352,7 @@ window.addEventListener('resize', () => {
 const confettiCanvas = $('#confetti');
 const confettiCtx = confettiCanvas.getContext('2d');
 let confettiPieces = [];
+let confettiAnimation = null;
 function resizeConfetti() {
   confettiCanvas.width = window.innerWidth;
   confettiCanvas.height = window.innerHeight;
@@ -356,10 +371,25 @@ function burstConfetti(amount = 80) {
       hue: [145, 198, 315, 42][Math.floor(Math.random() * 4)]
     });
   }
+  if (!confettiAnimation) {
+    confettiAnimation = requestAnimationFrame(animateConfetti);
+  }
+}
+function clearConfetti() {
+  confettiPieces = [];
+  confettiCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+  if (confettiAnimation) {
+    cancelAnimationFrame(confettiAnimation);
+    confettiAnimation = null;
+  }
 }
 function animateConfetti() {
   confettiCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
   confettiPieces = confettiPieces.filter(piece => piece.life > 0);
+  if (!confettiPieces.length) {
+    confettiAnimation = null;
+    return;
+  }
   for (const piece of confettiPieces) {
     piece.x += piece.vx;
     piece.y += piece.vy;
@@ -373,10 +403,9 @@ function animateConfetti() {
     confettiCtx.fillRect(-piece.size / 2, -piece.size / 2, piece.size, piece.size * 0.62);
     confettiCtx.restore();
   }
-  requestAnimationFrame(animateConfetti);
+  confettiAnimation = requestAnimationFrame(animateConfetti);
 }
 resizeConfetti();
 window.addEventListener('resize', resizeConfetti);
-animateConfetti();
 
 updateUI();
