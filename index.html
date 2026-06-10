@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Laboratório WEBSEC — Desafio Final</title>
+  <meta name="description" content="Mini laboratório local de segurança web com desafios simulados de SQL Injection, CSRF e XSS." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="noise"></div>
+  <canvas id="matrix" aria-hidden="true"></canvas>
+  <canvas id="confetti" aria-hidden="true"></canvas>
+
+  <header class="hero" id="topo">
+    <div class="badge">WEBSEC LAB • DESAFIO LOCAL</div>
+    <h1>Operação: <span>Falha Controlada</span></h1>
+    <p>
+      Professor, este é um laboratório local e seguro com três situações clássicas de segurança web.
+      A missão é explorar as falhas simuladas, validar cada etapa e desbloquear o resultado final.
+    </p>
+    <div class="hero-actions">
+      <a class="primary" href="#desafios">Iniciar laboratório</a>
+      <button class="ghost" id="resetBtn" type="button">Reiniciar progresso</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="status-card" aria-label="Progresso dos desafios">
+      <div>
+        <strong>Progresso do laboratório</strong>
+        <span id="progressText">0/3 etapas concluídas</span>
+      </div>
+      <div class="progress" aria-hidden="true"><span id="progressBar"></span></div>
+    </section>
+
+    <section class="grid" id="desafios">
+      <article class="challenge" id="challenge-sqli" data-challenge="sqli">
+        <div class="challenge-head">
+          <span class="number">01</span>
+          <div>
+            <h2>SQL Injection</h2>
+            <p>Faça bypass no login vulnerável do portal de testes.</p>
+          </div>
+          <span class="pill" id="pill-sqli">Pendente</span>
+        </div>
+
+        <div class="terminal">
+          <div class="terminal-bar"><span></span><span></span><span></span></div>
+          <pre id="sqlPreview">SELECT * FROM users WHERE usuario = '' AND senha = '';</pre>
+        </div>
+
+        <form class="lab-form" id="sqliForm" autocomplete="off">
+          <label>
+            Usuário
+            <input id="sqlUser" type="text" placeholder="admin" />
+          </label>
+          <label>
+            Senha / payload
+            <input id="sqlPass" type="text" placeholder="insira um payload de bypass" />
+          </label>
+          <button type="submit">Testar login</button>
+        </form>
+
+        <details>
+          <summary>Dica com resposta</summary>
+          <p>
+            Use o usuário <code>admin</code> e, no campo senha, teste exatamente:
+            <code>' OR '1'='1' --</code>
+          </p>
+        </details>
+        <p class="feedback" id="feedback-sqli"></p>
+      </article>
+
+      <article class="challenge locked" id="challenge-csrf" data-challenge="csrf">
+        <div class="challenge-head">
+          <span class="number">02</span>
+          <div>
+            <h2>CSRF</h2>
+            <p>Forje uma requisição POST para alterar o estado do laboratório.</p>
+          </div>
+          <span class="pill" id="pill-csrf">Bloqueado</span>
+        </div>
+
+        <div class="fake-browser">
+          <div class="url">POST /lab/confirmacao-operacao</div>
+          <div class="state-line"><span>Status atual:</span> operacao_pendente</div>
+          <div class="state-line"><span>Campos aceitos:</span> confirmacao=sim & nivel=professor</div>
+        </div>
+
+        <label class="code-label" for="csrfPayload">HTML controlado pelo laboratório</label>
+        <textarea id="csrfPayload" spellcheck="false" placeholder="Crie um formulário POST oculto apontando para /lab/confirmacao-operacao..."></textarea>
+        <div class="row-actions">
+          <button id="runCsrf" type="button">Executar payload</button>
+          <button class="soft" id="fillCsrf" type="button">Preencher resposta</button>
+        </div>
+
+        <details>
+          <summary>Dica com resposta</summary>
+          <p>Um exemplo funcional para este laboratório é:</p>
+          <pre class="hint-code">&lt;form method="POST" action="/lab/confirmacao-operacao" style="display:none"&gt;
+  &lt;input type="hidden" name="confirmacao" value="sim"&gt;
+  &lt;input type="hidden" name="nivel" value="professor"&gt;
+&lt;/form&gt;
+&lt;script&gt;document.forms[0].submit();&lt;/script&gt;</pre>
+        </details>
+        <p class="feedback" id="feedback-csrf"></p>
+      </article>
+
+      <article class="challenge locked" id="challenge-xss" data-challenge="xss">
+        <div class="challenge-head">
+          <span class="number">03</span>
+          <div>
+            <h2>XSS refletido</h2>
+            <p>Demonstre que o mural aceitaria HTML sem sanitização.</p>
+          </div>
+          <span class="pill" id="pill-xss">Bloqueado</span>
+        </div>
+
+        <div class="mural">
+          <strong>Mural do laboratório</strong>
+          <div class="mural-preview" id="muralPreview">Digite uma mensagem para visualizar o reflexo.</div>
+        </div>
+
+        <label class="code-label" for="xssPayload">Mensagem / payload</label>
+        <input id="xssPayload" type="text" placeholder="insira um payload com tag e evento JavaScript" />
+        <div class="row-actions">
+          <button id="testXss" type="button">Testar payload</button>
+          <button class="soft" id="fillXss" type="button">Preencher resposta</button>
+        </div>
+
+        <details>
+          <summary>Dica com resposta</summary>
+          <p>
+            Use exatamente:
+            <code>&lt;img src=x onerror="alert('WEBSEC')"&gt;</code>
+          </p>
+        </details>
+        <p class="feedback" id="feedback-xss"></p>
+      </article>
+    </section>
+
+    <section class="invite locked" id="convite" aria-live="polite">
+      <div class="invite-card">
+        <div class="glow"></div>
+        <div class="badge big">DESAFIO FINAL LIBERADO</div>
+        <h2>Professor, aceita ser nosso<br><span>Amigo de Formatura?</span></h2>
+        <p>
+          A turma de Análise e Desenvolvimento de Sistemas — ADS 5ª Fase, Senac 2026 —
+          ficaria muito feliz em ter você ao nosso lado nesse momento especial.
+        </p>
+        <div class="choice-area" id="choiceArea">
+          <button class="yes" id="yesBtn" type="button">Sim, aceito!</button>
+          <button class="no" id="noBtn" type="button">Não</button>
+        </div>
+        <small>Observação técnica: o botão “Não” está claramente comprometido.</small>
+      </div>
+    </section>
+  </main>
+
+  <div class="modal" id="videoModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-card">
+      <button class="close" id="closeModal" type="button" aria-label="Fechar vídeo">×</button>
+      <h2 id="modalTitle">Convite aceito! 🎓</h2>
+      <video id="inviteVideo" controls playsinline preload="metadata">
+        <source src="assets/convite-video.mp4" type="video/mp4" />
+        Seu navegador não conseguiu reproduzir o vídeo. Abra o arquivo em assets/convite-video.mp4.
+      </video>
+    </div>
+  </div>
+
+  <template id="csrfExample"><form method="POST" action="/lab/confirmacao-operacao" style="display:none">
+  <input type="hidden" name="confirmacao" value="sim">
+  <input type="hidden" name="nivel" value="professor">
+</form>
+<script>
+  document.forms[0].submit();
+</script></template>
+
+  <script src="script.js"></script>
+</body>
+</html>
